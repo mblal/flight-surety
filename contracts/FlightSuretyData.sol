@@ -12,6 +12,18 @@ contract FlightSuretyData {
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
 
+    struct Airline {
+        address companyAddress;
+        bool isActive;
+    }
+    mapping(uint8 => Airline) airlinesBis;
+
+    mapping(address => bool) airlines;
+
+    uint8 airlineCount = 0;
+
+    mapping(address => bool) authorizedCallers;
+
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -27,6 +39,13 @@ contract FlightSuretyData {
                                 public
     {
         contractOwner = msg.sender;
+        airlines[msg.sender] = true;
+        airlinesBis[airlineCount] = Airline({
+            companyAddress: msg.sender,
+            isActive: true
+        });
+
+        airlineCount ++;
     }
 
     /********************************************************************************************/
@@ -100,13 +119,30 @@ contract FlightSuretyData {
     */
     function registerAirline
                             (
+                                address newAirline
                             )
                             external
-                            pure
     {
+        airlines[newAirline] = true;
+        airlinesBis[airlineCount] = Airline({
+            companyAddress: newAirline,
+            isActive: true
+        });
+
+        airlineCount ++;
     }
 
+    function getAirlines() external view returns(address[]) {
+        address[] memory result = new address[](airlineCount);
+        for(uint8 i = 0; i < airlineCount; i++){
+            result[i] = airlinesBis[i].companyAddress;
+        }
+        return result;
+    }
 
+    function isRegisteredAirline(address newAirline) external view returns(bool){
+        return  airlines[newAirline];
+    }
    /**
     * @dev Buy insurance for a flight
     *
@@ -180,6 +216,8 @@ contract FlightSuretyData {
         fund();
     }
 
-
+    function authorizeCaller(address authorizedContract) public requireContractOwner{
+        authorizedCallers[authorizedContract] = true;
+    }
 }
 

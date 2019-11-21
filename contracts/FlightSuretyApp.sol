@@ -34,7 +34,18 @@ contract FlightSuretyApp {
     }
     mapping(bytes32 => Flight) private flights;
 
- 
+    // Data contract
+    FlightSuretyData flightSuretyData;
+
+        //  Multiparty consensus threshold
+    uint256 private constant CONSENSUS_THRESHOLD = 50;
+
+    // Nubmer airlines threshold to trigger contract smartness
+    uint256 private constant NB_AIRLINE_THRESHOLD = 4;
+
+    uint256 _votes = 0;
+    address[] multiCallers = new address[](0);
+
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
     /********************************************************************************************/
@@ -73,10 +84,12 @@ contract FlightSuretyApp {
     */
     constructor
                                 (
+                                    address dataContractAddress
                                 )
                                 public
     {
         contractOwner = msg.sender;
+        flightSuretyData = FlightSuretyData(dataContractAddress);
     }
 
     /********************************************************************************************/
@@ -102,12 +115,38 @@ contract FlightSuretyApp {
     */
     function registerAirline
                             (
+                                address airline
                             )
                             external
-                            pure
                             returns(bool success, uint256 votes)
     {
-        return (success, 0);
+        require(flightSuretyData.isRegisteredAirline(msg.sender), "You are not allowed to add an Airline company");
+        require(!flightSuretyData.isRegisteredAirline(airline), "This airline is already registered");
+
+        bool isIN = false;
+
+        for(uint c = 0; c < multiCallers.length; c++){
+            if (multiCallers[c] == msg.sender){
+                isIN = true;
+                break;
+            }
+        }
+        require(!isIN, "Caller has already called this function.");
+
+        multiCallers.push(msg.sender);
+
+        uint256 airlinesCount = flightSuretyData.getAirlines().length;
+
+        if (airlinesCount < NB_AIRLINE_THRESHOLD){
+            flightSuretyData.registerAirline(airline);
+        }
+
+        if (multiCallers.length.div(NB_AIRLINE_THRESHOLD).mul(100) >= CONSENSUS_THRESHOLD){
+             flightSuretyData.registerAirline(airline);
+             multiCallers = new address[](0);
+        }
+        // If airline is registered airline
+        return (success, multiCallers.length);
     }
 
 
@@ -335,4 +374,10 @@ contract FlightSuretyApp {
 
 // endregion
 
-}   
+}
+contract FlightSuretyData
+{
+    function registerAirline(address newAirline) external;
+    function getAirlines() public view returns(address[] memory);
+    function isRegisteredAirline(address newAirline) external view returns(bool);
+}
