@@ -3,13 +3,18 @@ var mnemonic = "candy maple cake sugar pudding cream honey rich smooth crumble s
 
 module.exports = {
   networks: {
-    development: {
+    ganache: {
+      host: "127.0.0.1",     // Localhost (default: none)
+      port: 7545,            // Standard Ethereum port (default: none)
+      network_id: "*",       // Any network (default: none)
+    },
+    /*development: {
       provider: function() {
-        return new HDWalletProvider(mnemonic, "http://127.0.0.1:8545/", 0, 50);
+        return new HDWalletProvider(mnemonic, "http://127.0.0.1:7545/", 0, 50);
       },
       network_id: '*',
       gas: 9999999
-    }
+    }*/
   },
   compilers: {
     solc: {

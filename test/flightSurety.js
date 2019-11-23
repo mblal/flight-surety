@@ -89,6 +89,10 @@ contract('Flight Surety Tests', async (accounts) => {
     assert.equal(result, true, "Airline should not be able to register another airline if it hasn't provided funding");
 
   });
+
+  it('should register Oracles using registerOracle function if fees are sufficients', async ()=> {
+    
+  });
  
 
 });
