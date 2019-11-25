@@ -149,7 +149,9 @@ contract FlightSuretyApp {
         return (success, multiCallers.length);
     }
 
-
+    function getAirlinesList() public view returns(address[]){
+        return flightSuretyData.getAirlines();
+    }
    /**
     * @dev Register a future flight for insuring.
     *
@@ -235,6 +237,7 @@ contract FlightSuretyApp {
     // Key = hash(index, flight, timestamp)
     mapping(bytes32 => ResponseInfo) private oracleResponses;
 
+    event AirlineAdded();
     // Event fired each time an oracle submits a response
     event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
 

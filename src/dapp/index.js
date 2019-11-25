@@ -25,7 +25,21 @@ import './flightsurety.css';
                 display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
             });
         })
-    
+        
+        DOM.elid('register-airline').addEventListener('click', () => {
+            let address = DOM.elid('airline-address').value;
+            // Write transaction
+            contract.registerAirline(address, (error, result) => {
+                console.log(result);
+            });
+        })
+
+        DOM.elid('get-airlines-list').addEventListener('click', () => {
+            contract.getAirlines((error, result) => {
+                console.log('---------------------Airlines List-------------------------');
+                console.log(error, result);
+            });
+        })
     });
     
 
