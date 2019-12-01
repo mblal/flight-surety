@@ -44,7 +44,8 @@ contract FlightSuretyApp {
     uint256 private constant NB_AIRLINE_THRESHOLD = 4;
 
     uint256 _votes = 0;
-    address[] multiCallers = new address[](0);
+
+    mapping(address => address[]) votersForAirline;
 
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
@@ -123,30 +124,36 @@ contract FlightSuretyApp {
         require(flightSuretyData.isRegisteredAirline(msg.sender), "You are not allowed to add an Airline company");
         require(!flightSuretyData.isRegisteredAirline(airline), "This airline is already registered");
 
-        bool isIN = false;
-
-        for(uint c = 0; c < multiCallers.length; c++){
-            if (multiCallers[c] == msg.sender){
-                isIN = true;
-                break;
-            }
-        }
-        require(!isIN, "Caller has already called this function.");
-
-        multiCallers.push(msg.sender);
 
         uint256 airlinesCount = flightSuretyData.getAirlines().length;
 
         if (airlinesCount < NB_AIRLINE_THRESHOLD){
             flightSuretyData.registerAirline(airline);
+        } else {
+
+            bool isIN = false;
+
+            //if (votersForAirline[0xa9B1b6F2129EaCf56A1DfBf1265F56F6b81ca49f].length == 0){
+            //      votersForAirline[0xa9B1b6F2129EaCf56A1DfBf1265F56F6b81ca49f] = new address[](0);
+            //}
+
+            for(uint c = 0; c < votersForAirline[airline].length; c++){
+                if (votersForAirline[airline][c] == msg.sender){
+                    isIN = true;
+                    break;
+                }
+            }
+            require(!isIN, "The voter has already voted for this airline.");
+
+            votersForAirline[airline].push(msg.sender);
         }
 
-        if (multiCallers.length.div(NB_AIRLINE_THRESHOLD).mul(100) >= CONSENSUS_THRESHOLD){
+        if (votersForAirline[airline].length.div(NB_AIRLINE_THRESHOLD).mul(100) >= CONSENSUS_THRESHOLD){
              flightSuretyData.registerAirline(airline);
-             multiCallers = new address[](0);
+             votersForAirline[airline] = new address[](0);
         }
         // If airline is registered airline
-        return (success, multiCallers.length);
+        return (success, votersForAirline[airline].length);
     }
 
     function getAirlinesList() public view returns(address[]){

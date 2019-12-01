@@ -47,10 +47,11 @@ export default class Contract {
         console.log('--------------The owner-------------------');
         console.log(self.owner)
         console.log('--------------The new Airline-------------------');
-        console.log(self.newAirline);
+        console.log(airlineAddress);
+        alert(self.owner);
        self.flightSuretyApp.methods
             .registerAirline(airlineAddress)
-            .send({from: self.owner, gas: 300000}, callback);
+            .send({from: self.owner, gas: 3000000}, callback);
     }
 
     getAirlines(callback){
