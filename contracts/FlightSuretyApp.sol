@@ -160,9 +160,9 @@ contract FlightSuretyApp {
                                     string flight,
                                     uint256 timestamp
                                 )
-                                external
+                                external returns(bytes32, uint8, uint256, address)
     {
-        flightSuretyData.registerFlight(flight, timestamp, msg.sender);
+        return flightSuretyData.registerFlight(flight, timestamp, msg.sender);
     }
 
    /**
@@ -397,5 +397,5 @@ contract FlightSuretyData
     function getAirlines() public view returns(address[] memory);
     function isRegisteredAirline(address newAirline) external view returns(bool);
     function fund(address airline) external payable;
-    function registerFlight(string flight, uint256 timestamp, address airline) external;
+    function registerFlight(string flight, uint256 timestamp, address airline) external returns(bytes32, uint8, uint256, address);
 }

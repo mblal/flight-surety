@@ -100,6 +100,6 @@ export default class Contract {
         let index = Math.floor(Math.random() * 5);
         self.flightSuretyApp.methods
             .registerFlight(flight, Math.floor(Date.now() / 1000))
-            .send({from: self.owner /*self.airlines[index]*/, gas: 300000}, callback);
+            .call({from: self.airlines[index], gas: 300000}, callback);
     }
 }

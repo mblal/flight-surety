@@ -210,7 +210,7 @@ contract FlightSuretyData {
         airlinesBis[1].isActive = true;
     }
 
-    function registerFlight(string flight, uint256 timestamp, address airline) external{
+    function registerFlight(string flight, uint256 timestamp, address airline) external returns(bytes32, uint8, uint256, address){
 
         bytes32 flightKey = getFlightKey(airline, flight, timestamp);
 
@@ -219,7 +219,8 @@ contract FlightSuretyData {
             statusCode: STATUS_CODE_ON_TIME,
             updatedTimestamp: timestamp,
             airline: airline
-    });
+        });
+        return (flightKey, flights[flightKey].statusCode, flights[flightKey].updatedTimestamp, flights[flightKey].airline);
     }
     function getFlightKey
                         (
