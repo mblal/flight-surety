@@ -136,6 +136,10 @@ contract('Flight Surety Tests', async (accounts) => {
   it('should register Oracles using registerOracle function if fees are sufficients', async ()=> {
     
   });
+
+  it('Should register flight', async () => {
+    await config.flightSuretyApp.registerFlight('F01', Date.now, {from: config.owner});
+  })
  
 
 });

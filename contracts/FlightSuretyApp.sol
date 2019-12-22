@@ -26,14 +26,6 @@ contract FlightSuretyApp {
 
     address private contractOwner;          // Account used to deploy contract
 
-    struct Flight {
-        bool isRegistered;
-        uint8 statusCode;
-        uint256 updatedTimestamp;
-        address airline;
-    }
-    mapping(bytes32 => Flight) private flights;
-
     // Data contract
     FlightSuretyData flightSuretyData;
 
@@ -165,11 +157,12 @@ contract FlightSuretyApp {
     */
     function registerFlight
                                 (
+                                    string flight,
+                                    uint256 timestamp
                                 )
                                 external
-                                pure
     {
-
+        flightSuretyData.registerFlight(flight, timestamp, msg.sender);
     }
 
    /**
@@ -210,6 +203,17 @@ contract FlightSuretyApp {
         emit OracleRequest(index, airline, flight, timestamp);
     }
 
+    function fund
+                            (
+                            )
+                            public
+                            payable
+    {
+        require(flightSuretyData.isRegisteredAirline(msg.sender), "You aren't registered yet");
+        require(msg.value > 10 ether, "Fund is unsufficient");
+        flightSuretyData.fund.value(msg.value)(msg.sender);
+
+    }
 
 // region ORACLE MANAGEMENT
 
@@ -220,7 +224,7 @@ contract FlightSuretyApp {
     uint256 public constant REGISTRATION_FEE = 1 ether;
 
     // Number of oracles that must respond for valid status
-    uint256 private constant MIN_RESPONSES = 3;
+    uint256 private constant MIN_RESPONSES = 1;
 
 
     struct Oracle {
@@ -317,6 +321,8 @@ contract FlightSuretyApp {
         emit OracleReport(airline, flight, timestamp, statusCode);
         if (oracleResponses[key].responses[statusCode].length >= MIN_RESPONSES) {
 
+            oracleResponses[key].isOpen = false;
+
             emit FlightStatusInfo(airline, flight, timestamp, statusCode);
 
             // Handle flight status as appropriate
@@ -390,4 +396,6 @@ contract FlightSuretyData
     function registerAirline(address newAirline) external;
     function getAirlines() public view returns(address[] memory);
     function isRegisteredAirline(address newAirline) external view returns(bool);
+    function fund(address airline) external payable;
+    function registerFlight(string flight, uint256 timestamp, address airline) external;
 }

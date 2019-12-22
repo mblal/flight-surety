@@ -9,6 +9,15 @@ contract FlightSuretyData {
     /*                                       DATA VARIABLES                                     */
     /********************************************************************************************/
 
+     // Flight status codees
+    uint8 private constant STATUS_CODE_UNKNOWN = 0;
+    uint8 private constant STATUS_CODE_ON_TIME = 10;
+    uint8 private constant STATUS_CODE_LATE_AIRLINE = 20;
+    uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
+    uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
+    uint8 private constant STATUS_CODE_LATE_OTHER = 50;
+
+
     address private contractOwner;                                      // Account used to deploy contract
     bool private operational = true;                                    // Blocks all state changes throughout the contract if false
 
@@ -24,6 +33,13 @@ contract FlightSuretyData {
 
     mapping(address => bool) authorizedCallers;
 
+    struct Flight {
+        bool isRegistered;
+        uint8 statusCode;
+        uint256 updatedTimestamp;
+        address airline;
+    }
+    mapping(bytes32 => Flight) private flights;
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -42,7 +58,7 @@ contract FlightSuretyData {
         airlines[msg.sender] = true;
         airlinesBis[airlineCount] = Airline({
             companyAddress: msg.sender,
-            isActive: true
+            isActive: false
         });
 
         airlineCount ++;
@@ -126,7 +142,7 @@ contract FlightSuretyData {
         airlines[newAirline] = true;
         airlinesBis[airlineCount] = Airline({
             companyAddress: newAirline,
-            isActive: true
+            isActive: false
         });
 
         airlineCount ++;
@@ -186,12 +202,25 @@ contract FlightSuretyData {
     */
     function fund
                             (
+                                address airline
                             )
-                            public
+                            external
                             payable
     {
+        airlinesBis[1].isActive = true;
     }
 
+    function registerFlight(string flight, uint256 timestamp, address airline) external{
+
+        bytes32 flightKey = getFlightKey(airline, flight, timestamp);
+
+        flights[flightKey] = Flight ({
+            isRegistered: true,
+            statusCode: STATUS_CODE_ON_TIME,
+            updatedTimestamp: timestamp,
+            airline: airline
+    });
+    }
     function getFlightKey
                         (
                             address airline,
@@ -209,12 +238,12 @@ contract FlightSuretyData {
     * @dev Fallback function for funding smart contract.
     *
     */
-    function()
+    /*function()
                             external
                             payable
     {
-        fund();
-    }
+        fund(airline);
+    }*/
 
     function authorizeCaller(address authorizedContract) public requireContractOwner{
         authorizedCallers[authorizedContract] = true;

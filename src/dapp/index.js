@@ -40,6 +40,29 @@ import './flightsurety.css';
                 console.log(error, result);
             });
         })
+
+        DOM.elid('airline-fund').addEventListener('click', () => {
+            contract.airlineFund((error, result) => {
+                console.log('---------------------Funding-------------------------');
+                console.log(error, result);
+            });
+        });
+
+        DOM.elid('register-flight').addEventListener('click', () => {
+            let flight = DOM.elid('flight-number').value;
+            contract.registerFlight(flight, (error, result) => {
+                console.log('---------------------Register Flight-------------------------');
+                console.log(error, result);
+            });
+        });
+
+        document.addEventListener('statusEvent', function (e) {
+          console.log('--------------------------------------');
+          console.log(DOM.elid('display-wrapper').lastChild.getElementsByClassName('col-sm-8')[0].append(' Status: ' + e.__proto__.dataResult.status));
+
+          console.log('---------------------------------')
+          }, false);
+          
     });
     
 
