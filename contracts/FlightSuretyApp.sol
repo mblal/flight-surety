@@ -38,7 +38,6 @@ contract FlightSuretyApp {
     uint256 _votes = 0;
 
     mapping(address => address[]) votersForAirline;
-
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
     /********************************************************************************************/
@@ -66,7 +65,6 @@ contract FlightSuretyApp {
         require(msg.sender == contractOwner, "Caller is not contract owner");
         _;
     }
-
     /********************************************************************************************/
     /*                                       CONSTRUCTOR                                        */
     /********************************************************************************************/
@@ -160,11 +158,15 @@ contract FlightSuretyApp {
                                     string flight,
                                     uint256 timestamp
                                 )
-                                external returns(bytes32, uint8, uint256, address)
+                                external returns(uint8, uint8, uint256, address)
     {
-        return flightSuretyData.registerFlight(flight, timestamp, msg.sender);
+        (bytes32 _key, uint8 _statusCode, uint256 _timestamp, address _airline) = flightSuretyData.registerFlight(flight, timestamp, msg.sender);
+        emit FlightRegistered(_key, _statusCode, _timestamp, _airline);
     }
 
+    function flightsList() public view returns(bytes32[] memory, uint8[] memory,uint256[] memory, address[] memory) {
+        return flightSuretyData.getRegisteredFlights();
+    }
    /**
     * @dev Called after oracle has updated flight status
     *
@@ -177,8 +179,14 @@ contract FlightSuretyApp {
                                     uint8 statusCode
                                 )
                                 internal
-                                pure
     {
+        if (statusCode == 20) {
+           require(flightSuretyData.hasInsurance(airline, flight, timestamp), "You do not have insurance on this flight");
+           flightSuretyData.pay(airline, flight, timestamp);
+        }
+        //flightSuretyData.pay(msg.sender);
+        // Check if the sender has bought the insurrance for this flight (the sender or all people who buy the insurrance for the flight)
+        // refund the sender or all people who bought the insurrance.
     }
 
 
@@ -215,6 +223,17 @@ contract FlightSuretyApp {
 
     }
 
+    function buy(bytes32 flightKey) public payable{
+
+        require(msg.value >= 0, "You have to pay an amount up to 1 Eth");
+        require(msg.value <= 1 ether, "The maximum amount you are authorized to pay is up to 1 Eth");
+
+        flightSuretyData.buy.value(msg.value)(flightKey, msg.sender, msg.value);
+    }
+
+    function hasInsurance(address airline, string flight, uint256 timestamp) public view returns(bool){
+        return flightSuretyData.hasInsurance(airline, flight, timestamp);
+    }
 // region ORACLE MANAGEMENT
 
     // Incremented to add pseudo-randomness at various points
@@ -250,6 +269,8 @@ contract FlightSuretyApp {
 
     event AirlineAdded();
     // Event fired each time an oracle submits a response
+    event FlightRegistered(bytes32 _flightKey, uint8 _statusCode, uint256 _timestamp, address _airline);
+
     event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
 
     event OracleReport(address airline, string flight, uint256 timestamp, uint8 status);
@@ -330,20 +351,6 @@ contract FlightSuretyApp {
         }
     }
 
-
-    function getFlightKey
-                        (
-                            address airline,
-                            string flight,
-                            uint256 timestamp
-                        )
-                        pure
-                        internal
-                        returns(bytes32)
-    {
-        return keccak256(abi.encodePacked(airline, flight, timestamp));
-    }
-
     // Returns array of three non-duplicating integers from 0-9
     function generateIndexes
                             (
@@ -398,4 +405,8 @@ contract FlightSuretyData
     function isRegisteredAirline(address newAirline) external view returns(bool);
     function fund(address airline) external payable;
     function registerFlight(string flight, uint256 timestamp, address airline) external returns(bytes32, uint8, uint256, address);
+    function getRegisteredFlights() external view returns(bytes32[] memory, uint8[] memory,uint256[] memory, address[] memory);
+    function buy(bytes32 flight, address passenger, uint256 amount) external payable;
+    function pay(address airline, string flight, uint256 timestamp) external;
+    function hasInsurance(address airline, string flight, uint256 timestamp) external view returns (bool);
 }

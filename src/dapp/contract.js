@@ -38,6 +38,9 @@ export default class Contract {
             this.flightSuretyApp.events.FlightStatusInfo({
                 fromBlock: 0
             }, (error, event) => {
+                console.log('------------------------------Ethereum event--------------------------------');
+                console.log(event);
+                console.log('------------------------------End Ethereum event--------------------------------');
                console.log(event.returnValues);
                var uiEvent = document.createEvent('Event');
 
@@ -45,6 +48,19 @@ export default class Contract {
                 uiEvent.initEvent('statusEvent', true, true);
                 uiEvent.__proto__.dataResult = event.returnValues;
                 document.dispatchEvent(uiEvent);
+            });
+
+            this.flightSuretyApp.events.FlightRegistered({
+                fromBlock: 0
+            },(error, event) => {
+                console.log(event.returnValues);
+
+                var uiRegisterFlightEvent = document.createEvent('Event');
+
+                // Nomme l'événement 'build'.
+                uiRegisterFlightEvent.initEvent('RegisterFlightEvent', true, true);
+                uiRegisterFlightEvent.__proto__.dataResult = event.returnValues;
+                document.dispatchEvent(uiRegisterFlightEvent);
             });
         });
 
@@ -100,6 +116,19 @@ export default class Contract {
         let index = Math.floor(Math.random() * 5);
         self.flightSuretyApp.methods
             .registerFlight(flight, Math.floor(Date.now() / 1000))
-            .call({from: self.airlines[index], gas: 300000}, callback);
+            .send({from: self.airlines[index], gas: 300000}, callback);
+    }
+    getFlights(callback) {
+        let self = this;
+        self.flightSuretyApp.methods
+            .flightsList()
+            .call({from: self.owner}, callback);
+    }
+    buyInsurance(flightKey, callback) {
+        console.log(this.owner);
+        const walletValue = web3.toWei(1, "ether");
+        this.flightSuretyApp.methods
+            .buy(flightKey)
+            .send({from: this.owner, value: walletValue, gas: 3000000}, callback);
     }
 }

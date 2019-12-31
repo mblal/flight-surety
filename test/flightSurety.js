@@ -94,7 +94,7 @@ contract('Flight Surety Tests', async (accounts) => {
 
   });
 
-  it('Should be smarter when it accross the threshold', async () => {
+  it('Should be smarter when it reachs the threshold', async () => {
     
     // ARRANGE
     let secondAirline = accounts[5];
@@ -139,7 +139,28 @@ contract('Flight Surety Tests', async (accounts) => {
 
   it('Should register flight', async () => {
     await config.flightSuretyApp.registerFlight('F01', Date.now, {from: config.owner});
-  })
+    /*let result = await config.flightSuretyApp.flightsList({from: config.owner});
+    console.log('-----------------Flight List-------------------------');
+    console.log(result);
+    console.log('-----------------End Flight List-------------------------');*/
+  });
  
+  it('Should buy an insurrance on a specific flight', async () => {
+    let result = await config.flightSuretyApp.flightsList({from: config.owner});
+    let flightKey = result[0][0];
+    //console.log(flightKey);
+    await config.flightSuretyApp.buy(flightKey, { from: config.owner, value: web3.utils.toWei('1', "ether"), gas: 3000000});
+
+  });
+
+  it('hasInsurance Test', async () => {
+
+    let result = await config.flightSuretyApp.hasInsurance({from: config.owner});
+    console.log('--------------------------hasInsurance Test----------------------------');
+    console.log(result);
+    console.log('--------------------------End hasInsurance Test----------------------------');
+    
+
+  });
 
 });

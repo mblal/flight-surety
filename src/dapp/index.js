@@ -9,13 +9,43 @@ import './flightsurety.css';
     let result = null;
 
     let contract = new Contract('localhost', () => {
-
+        var clone = document.cloneNode(true);
+       
         // Read transaction
         contract.isOperational((error, result) => {
             console.log(error,result);
             display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
         });
-    
+        contract.getFlights((error, result) => {
+            console.log('-----------------------Flights List----------------------');
+            console.log(error, result);
+            console.log('-----------------------End Flights List----------------------');
+
+              // Find a <table> element with id="myTable":
+               /* var table = document.getElementById("flights-list").getElementsByTagName('tbody')[0];
+                var tr = table.rows;
+                console.log('-----------------------Node checking--------------------------');
+                console.log(tr);
+                console.log('-----------------------End Node checking--------------------------');
+                table.removeChild(tr);
+                for (var index = 0; index < result[0].length; index++) {
+                // Create an empty <tr> element and add it to the 1st position of the table:
+                var row = table.insertRow(0);
+
+                // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
+                var cell1 = row.insertCell(0);
+                var cell2 = row.insertCell(1);
+                var cell3 = row.insertCell(2);
+                var cell4 = row.insertCell(3);
+
+                // Add some text to the new cells:
+                cell1.innerHTML = result[0][index];
+                cell2.innerHTML = result[1][index];
+                cell3.innerHTML = result[2][index];
+                cell4.innerHTML = result[3][index];
+              }
+              */
+        })
 
         // User-submitted transaction
         DOM.elid('submit-oracle').addEventListener('click', () => {
@@ -53,36 +83,50 @@ import './flightsurety.css';
             contract.registerFlight(flight, (error, result) => {
                 console.log('---------------------Register Flight-------------------------');
                 console.log(error, result);
-                result[0];
-                // Find a <table> element with id="myTable":
-                var table = document.getElementById("flights-list").getElementsByTagName('tbody')[0];
-
-                // Create an empty <tr> element and add it to the 1st position of the table:
-                var row = table.insertRow(0);
-
-                // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
-                var cell1 = row.insertCell(0);
-                var cell2 = row.insertCell(1);
-                var cell3 = row.insertCell(2);
-                var cell4 = row.insertCell(3);
-
-                // Add some text to the new cells:
-                cell1.innerHTML = result[0];
-                cell2.innerHTML = result[1];
-                cell3.innerHTML = result[2];
-                cell4.innerHTML = result[3];
             });
         });
 
         document.addEventListener('statusEvent', function (e) {
+            
           console.log('--------------------------------------');
           console.log(DOM.elid('display-wrapper').lastChild.getElementsByClassName('col-sm-8')[0].append(' Status: ' + e.__proto__.dataResult.status));
 
           console.log('---------------------------------')
           }, false);
+        
           
+          document.addEventListener('RegisterFlightEvent', function (e) {
+            console.log('--------------------------------------');
+            console.log(e);
+            
+            var table = document.getElementById("flights-list").getElementsByTagName('tbody')[0];
+
+            // Create an empty <tr> element and add it to the 1st position of the table:
+            var row = table.insertRow(0);
+
+            // Insert new cells (<td> elements) at the 1st and 2nd position of the "new" <tr> element:
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            var cell3 = row.insertCell(2);
+            var cell4 = row.insertCell(3);
+
+            // Add some text to the new cells:
+            cell1.innerHTML = e.__proto__.dataResult._index;
+            cell2.innerHTML = e.__proto__.dataResult._statusCode;
+            cell3.innerHTML = e.__proto__.dataResult._timestamp;
+            cell4.innerHTML = e.__proto__.dataResult._airline;
+           
+            console.log('---------------------------------')
+            }, false);
     });
     
+    DOM.elid('buy-insurance').addEventListener('click', () => {
+        let flightKey = DOM.elid('flight-key').value;
+        contract.buyInsurance(flightKey, (error, result) => {
+            console.log('---------------------Register Flight-------------------------');
+            console.log(error, result);
+        });
+    });
 
 })();
 

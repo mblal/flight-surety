@@ -34,12 +34,33 @@ contract FlightSuretyData {
     mapping(address => bool) authorizedCallers;
 
     struct Flight {
+        bytes32 id;
         bool isRegistered;
         uint8 statusCode;
         uint256 updatedTimestamp;
         address airline;
     }
-    mapping(bytes32 => Flight) private flights;
+    mapping(uint8 => Flight) private flights;
+
+    uint8 flightsCount = 0;
+
+    enum _Status
+    {
+        able,  // 0
+        unable //1
+    }
+
+    struct Insurance {
+        uint256 amount;
+        address passenger;
+        bytes32 flight;
+        _Status status;
+        bool isValid;
+    }
+
+    mapping(bytes32 => Insurance) insurances;
+
+    mapping(address => uint256) balance;
     /********************************************************************************************/
     /*                                       EVENT DEFINITIONS                                  */
     /********************************************************************************************/
@@ -62,6 +83,7 @@ contract FlightSuretyData {
         });
 
         airlineCount ++;
+        //flightsCount = 0;
     }
 
     /********************************************************************************************/
@@ -165,11 +187,18 @@ contract FlightSuretyData {
     */
     function buy
                             (
+                                bytes32 flight, address passenger, uint256 amount
                             )
                             external
                             payable
     {
-
+        insurances[flight] = Insurance({
+            amount: amount,
+            passenger: passenger,
+            flight: flight,
+            status: _Status.able,
+            isValid: true
+        });
     }
 
     /**
@@ -177,22 +206,34 @@ contract FlightSuretyData {
     */
     function creditInsurees
                                 (
+                                    address passenger
                                 )
                                 external
                                 pure
     {
+        require(balance[passenger] > 0, "You do not have enough money to initiate a withdraw.");
+        uint256 prev = balance[passenger];
+        balance[passenger] = 0;
+        passenger.transfer(prev);
     }
 
     /**
-     *  @dev Transfers eligible payout funds to insuree
+     *  @dev Transfers eligible payout funds to insuree.
      *
     */
+
     function pay
                             (
+                                address airline, string flight, uint256 timestamp
                             )
                             external
-                            pure
     {
+        bytes32 flightKey;
+        flightKey = getFlightKey(airline, flight, timestamp);
+        address passenger = insurances[flightKey].passenger;
+        uint256 payedAmount = insurances[flightKey].amount;
+        uint amountToRefund = SafeMath.mul(payedAmount, 1);
+        balances[passenger] += amountToRefund;
     }
 
    /**
@@ -214,13 +255,16 @@ contract FlightSuretyData {
 
         bytes32 flightKey = getFlightKey(airline, flight, timestamp);
 
-        flights[flightKey] = Flight ({
+        flights[flightsCount] = Flight ({
+            id: flightKey,
             isRegistered: true,
             statusCode: STATUS_CODE_ON_TIME,
             updatedTimestamp: timestamp,
             airline: airline
         });
-        return (flightKey, flights[flightKey].statusCode, flights[flightKey].updatedTimestamp, flights[flightKey].airline);
+        flightsCount++;
+        return (flightKey, flights[flightsCount - 1].statusCode, flights[flightsCount - 1].updatedTimestamp,
+            flights[flightsCount - 1].airline);
     }
     function getFlightKey
                         (
@@ -235,6 +279,25 @@ contract FlightSuretyData {
         return keccak256(abi.encodePacked(airline, flight, timestamp));
     }
 
+    function getRegisteredFlights() external view returns(bytes32[] memory, uint8[] memory,uint256[] memory, address[] memory){
+            bytes32[] memory flightsKeys = new bytes32[](flightsCount);
+            uint8[] memory flightsStatus = new uint8[](flightsCount);
+            uint256[] memory flightsTimestamp = new uint256[](flightsCount);
+            address[] memory flightsAirlines = new address[](flightsCount);
+
+            for(uint8 i = 0; i < flightsCount; i++) {
+                    flightsKeys[i] = flights[i].id;
+                    flightsStatus[i] = flights[i].statusCode;
+                    flightsTimestamp[i] = flights[i].updatedTimestamp;
+                    flightsAirlines[i] = flights[i].airline;
+            }
+            return (flightsKeys, flightsStatus, flightsTimestamp, flightsAirlines);
+    }
+
+    function hasInsurance(address airline, string flight, uint256 timestampe) external view returns (bool) {
+        bytes32 flightKey = getFlightKey(airline, flight, timestampe);
+        return insurances[flightKey].isValid;
+    }
     /**
     * @dev Fallback function for funding smart contract.
     *
