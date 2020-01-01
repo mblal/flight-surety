@@ -234,6 +234,10 @@ contract FlightSuretyApp {
     function hasInsurance(address airline, string flight, uint256 timestamp) public view returns(bool){
         return flightSuretyData.hasInsurance(airline, flight, timestamp);
     }
+
+    function withdraw() public {
+        flightSuretyData.creditInsurees(msg.sender);
+    }
 // region ORACLE MANAGEMENT
 
     // Incremented to add pseudo-randomness at various points
@@ -409,4 +413,5 @@ contract FlightSuretyData
     function buy(bytes32 flight, address passenger, uint256 amount) external payable;
     function pay(address airline, string flight, uint256 timestamp) external;
     function hasInsurance(address airline, string flight, uint256 timestamp) external view returns (bool);
+    function creditInsurees(address passenger) external;
 }

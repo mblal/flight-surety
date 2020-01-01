@@ -79,7 +79,8 @@ import './flightsurety.css';
         });
 
         DOM.elid('register-flight').addEventListener('click', () => {
-            let flight = DOM.elid('flight-number').value;
+            let flight = DOM.elid('flight-number-02').value;
+            alert(flight);
             contract.registerFlight(flight, (error, result) => {
                 console.log('---------------------Register Flight-------------------------');
                 console.log(error, result);
@@ -124,6 +125,13 @@ import './flightsurety.css';
         let flightKey = DOM.elid('flight-key').value;
         contract.buyInsurance(flightKey, (error, result) => {
             console.log('---------------------Register Flight-------------------------');
+            console.log(error, result);
+        });
+    });
+
+    DOM.elid('withdraw-fund').addEventListener('click', () => {
+        contract.withdraw((error, result) => {
+            console.log('---------------------Initiate withdraw-------------------------');
             console.log(error, result);
         });
     });

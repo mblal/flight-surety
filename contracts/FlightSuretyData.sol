@@ -209,7 +209,6 @@ contract FlightSuretyData {
                                     address passenger
                                 )
                                 external
-                                pure
     {
         require(balance[passenger] > 0, "You do not have enough money to initiate a withdraw.");
         uint256 prev = balance[passenger];
@@ -233,7 +232,7 @@ contract FlightSuretyData {
         address passenger = insurances[flightKey].passenger;
         uint256 payedAmount = insurances[flightKey].amount;
         uint amountToRefund = SafeMath.mul(payedAmount, 1);
-        balances[passenger] += amountToRefund;
+        balance[passenger] += amountToRefund;
     }
 
    /**

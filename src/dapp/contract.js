@@ -15,6 +15,7 @@ export default class Contract {
         this.airlines = [];
         this.passengers = [];
         this.newAirline = null;
+        this.flights = {};
     }
 
     initialize(callback) {
@@ -101,9 +102,9 @@ export default class Contract {
     fetchFlightStatus(flight, callback) {
         let self = this;
         let payload = {
-            airline: self.airlines[0],
+            airline: this.flights[flight].airline,
             flight: flight,
-            timestamp: Math.floor(Date.now() / 1000)
+            timestamp: this.flights[flight].timestamp
         } 
         self.flightSuretyApp.methods
             .fetchFlightStatus(payload.airline, payload.flight, payload.timestamp)
@@ -114,8 +115,11 @@ export default class Contract {
     registerFlight(flight, callback){
         let self = this;
         let index = Math.floor(Math.random() * 5);
+        let flightObject  = {id: flight, airline: self.airlines[index], timestamp: Math.floor(Date.now() / 1000)};
+        this.flights[flight] = flightObject;
+        console.log(this.flights);
         self.flightSuretyApp.methods
-            .registerFlight(flight, Math.floor(Date.now() / 1000))
+            .registerFlight(flight, flightObject.timestamp)
             .send({from: self.airlines[index], gas: 300000}, callback);
     }
     getFlights(callback) {
@@ -130,5 +134,11 @@ export default class Contract {
         this.flightSuretyApp.methods
             .buy(flightKey)
             .send({from: this.owner, value: walletValue, gas: 3000000}, callback);
+    }
+    withdraw(callback) {
+        console.log('--------------withdraw--------------------');
+        this.flightSuretyApp.methods
+            .withdraw()
+            .send({from: this.owner}, callback);
     }
 }
