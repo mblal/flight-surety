@@ -76,9 +76,6 @@ export default class Contract {
 
     registerAirline(airlineAddress, callback){
         let self = this;
-        console.log('--------------The owner-------------------');
-        console.log(self.owner)
-        console.log('--------------The new Airline-------------------');
         console.log(airlineAddress);
         alert(self.owner);
        self.flightSuretyApp.methods

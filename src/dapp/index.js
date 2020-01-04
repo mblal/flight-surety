@@ -80,7 +80,6 @@ import './flightsurety.css';
 
         DOM.elid('register-flight').addEventListener('click', () => {
             let flight = DOM.elid('flight-number-02').value;
-            alert(flight);
             contract.registerFlight(flight, (error, result) => {
                 console.log('---------------------Register Flight-------------------------');
                 console.log(error, result);
@@ -110,12 +109,14 @@ import './flightsurety.css';
             var cell2 = row.insertCell(1);
             var cell3 = row.insertCell(2);
             var cell4 = row.insertCell(3);
+            var cell5 = row.insertCell(4);
 
             // Add some text to the new cells:
-            cell1.innerHTML = e.__proto__.dataResult._index;
-            cell2.innerHTML = e.__proto__.dataResult._statusCode;
-            cell3.innerHTML = e.__proto__.dataResult._timestamp;
-            cell4.innerHTML = e.__proto__.dataResult._airline;
+            cell1.innerHTML = e.__proto__.dataResult.flight;
+            cell2.innerHTML = e.__proto__.dataResult._flightKey;
+            cell3.innerHTML = e.__proto__.dataResult._statusCode;
+            cell4.innerHTML = e.__proto__.dataResult._timestamp;
+            cell5.innerHTML = e.__proto__.dataResult._airline;
            
             console.log('---------------------------------')
             }, false);

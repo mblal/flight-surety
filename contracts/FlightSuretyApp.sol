@@ -158,10 +158,11 @@ contract FlightSuretyApp {
                                     string flight,
                                     uint256 timestamp
                                 )
-                                external returns(uint8, uint8, uint256, address)
+                                external returns(uint8, uint8, uint256, address, string)
     {
         (bytes32 _key, uint8 _statusCode, uint256 _timestamp, address _airline) = flightSuretyData.registerFlight(flight, timestamp, msg.sender);
-        emit FlightRegistered(_key, _statusCode, _timestamp, _airline);
+        string memory _flight = flight;
+        emit FlightRegistered(_key, _statusCode, _timestamp, _airline, _flight);
     }
 
     function flightsList() public view returns(bytes32[] memory, uint8[] memory,uint256[] memory, address[] memory) {
@@ -273,7 +274,7 @@ contract FlightSuretyApp {
 
     event AirlineAdded();
     // Event fired each time an oracle submits a response
-    event FlightRegistered(bytes32 _flightKey, uint8 _statusCode, uint256 _timestamp, address _airline);
+    event FlightRegistered(bytes32 _flightKey, uint8 _statusCode, uint256 _timestamp, address _airline, string flight);
 
     event FlightStatusInfo(address airline, string flight, uint256 timestamp, uint8 status);
 
